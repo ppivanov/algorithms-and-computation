@@ -1,4 +1,4 @@
-#include "BinarySearchTree.h"
+﻿#include "BinarySearchTree.h"
 
 BinarySearchTree::BinarySearchTree() = default;
 BinarySearchTree::~BinarySearchTree() {
@@ -23,6 +23,8 @@ void BinarySearchTree::add(int toadd)
 }
 void BinarySearchTree::add(int toadd, TreeNode * node)
 {
+	if (node->data == toadd) return;
+
 	if (toadd < node->data) {
 		if (node->left == nullptr) {
 			node->left = new TreeNode(toadd);
@@ -40,18 +42,17 @@ void BinarySearchTree::add(int toadd, TreeNode * node)
 	}
 }
 
-// template used for the left and right side of the tree used in remove(int, TreeNode*)
 void BinarySearchTree::remove_template(int toremove, TreeNode * &node, bool (BinarySearchTree:: * not_equal_condition)(TreeNode*, TreeNode*), TreeNode * (BinarySearchTree:: * get_nearest_node)(TreeNode*), BinarySearchTree bst) {
 	if (node != nullptr) {
 		if (toremove == node->data) {
 			TreeNode* node_to_delete = node;
-			TreeNode* largest_leaf_node = (bst.*get_nearest_node)(node_to_delete);
+			TreeNode* nearest_leaf_node = (bst.*get_nearest_node)(node_to_delete);
 
-			if ((bst.*not_equal_condition)(node_to_delete, largest_leaf_node)) {
-				largest_leaf_node->left = node_to_delete->left;
-				largest_leaf_node->right = node_to_delete->right;
+			if ((bst.*not_equal_condition)(node_to_delete, nearest_leaf_node)) {
+				nearest_leaf_node->left = node_to_delete->left;
+				nearest_leaf_node->right = node_to_delete->right;
 			}
-			node = largest_leaf_node;
+			node = nearest_leaf_node;
 
 			delete node_to_delete;
 			return;
@@ -177,69 +178,28 @@ bool BinarySearchTree::right_side_condition(TreeNode * node_to_delete, TreeNode 
 	return node_to_delete->right != nearest_node;
 }
 
+void BinarySearchTree::pretty_print() {
+	pretty_print(root);
+}
 
-/************** Remove function without the template **************/
-/*
-void BinarySearchTree::remove(int toremove, TreeNode* node)
+void BinarySearchTree::pretty_print(const std::string& prefix, const TreeNode* node, bool isLeft)
 {
-	//BinarySearchTree bst;
-	if (toremove < node->data) {
-		if (node->left != nullptr) {
-			if (toremove == node->left->data) {
-				TreeNode* node_to_delete = node->left;
-				TreeNode* largest_leaf_node = get_nearest_big_node(node_to_delete);
+	if (node != nullptr)
+	{
+		std::cout << prefix;
 
-				if (node_to_delete->left != largest_leaf_node) {
-					largest_leaf_node->left = node_to_delete->left;
-					largest_leaf_node->right = node_to_delete->right;
-				}
-				node->left = largest_leaf_node;
+		std::cout << (isLeft ? "|--" : "|__");
 
-				delete node_to_delete;
-				return;
-			}
-			remove(toremove, node->left);
-		}
-		else {
-			std::cout << toremove << " not found" << std::endl;
-			return;
-		}
+		// print the value of the node
+		std::cout << node->data << std::endl;
 
-	}
-	else if (toremove > node->data) {
-		if (node->right != nullptr) {
-			if (toremove == node->right->data) {
-				TreeNode* node_to_delete = node->right;
-				TreeNode* smallest_leaf_node = get_nearest_small_node(node_to_delete);
-
-				if (node_to_delete->right != smallest_leaf_node) {
-					smallest_leaf_node->left = node_to_delete->left;
-					smallest_leaf_node->right = node_to_delete->right;
-				}
-				node->right = smallest_leaf_node;
-
-				delete node_to_delete;
-				return;
-			}
-			remove(toremove, node->right);
-		}
-		else {
-			std::cout << toremove << " not found" << std::endl;
-			return;
-		}
-	}
-	else {
-		TreeNode* old_root = root;
-		root = old_root->right;
-		TreeNode* leaf_node = get_nearest_small_node(root);
-		if (leaf_node != nullptr) {
-			leaf_node->left = old_root->left;
-			root->left = leaf_node;
-		}
-		else {
-			root->left = old_root->left;
-		}
-		delete old_root;
+		// enter the next tree level - left and right branch
+		pretty_print(prefix + (isLeft ? "|   " : "    "), node->left, true);
+		pretty_print(prefix + (isLeft ? "|   " : "    "), node->right, false);
 	}
 }
-*/
+
+void BinarySearchTree::pretty_print(const TreeNode* node)
+{
+	pretty_print("", node, false);
+}
