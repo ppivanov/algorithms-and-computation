@@ -2,26 +2,38 @@
 int main() {
 	BinarySearchTree bst = BinarySearchTree();
 
-	//bst.add(5);									// root
-	//bst.add(4);									// root->left
-	//bst.add(3);									// root->left->left
-	//bst.add(1);									// root->left->left->left
-	//bst.add(-1);								// root->left->left->left->left
-	//bst.add(7);									// root->right
-	//bst.add(9);									// root->right->right
-	//bst.add(6);									// root->right->left
-	//bst.add(10);								// root->right->right->right
-
+	int numberToDelete = 100;
+	/*
 	for (size_t i = 0; i < 10; i++)
 	{
-		bst.add(rand() % 40);
-	}
-		bst.add(23);
+		int numberToAdd = rand() % 40;
+		if (i == 5) numberToDelete = numberToAdd;
+		
+		bst.add(numberToAdd);
+	}*/
+
+	bst.add(6);
+	bst.add(5);
+	bst.add(1);
+	bst.add(100);
+	bst.add(21);
+	bst.add(15);
+	bst.add(63);
+	bst.add(79);
+	bst.add(43);
+	bst.add(61);
+	bst.add(48);
+	bst.add(27);
+	bst.add(24);
+	bst.add(29);
+	bst.add(38);
+	bst.add(32);
+
 	bst.pretty_print();
 
-	std::cout << "Height of tree: " << bst.height() << std::endl << std::endl;		// expected output == 4
+	std::cout << "Height of tree: " << bst.height() << std::endl << std::endl;
 
-	bst.remove(23);
+	bst.remove(numberToDelete);
 
 	bst.pretty_print();
 

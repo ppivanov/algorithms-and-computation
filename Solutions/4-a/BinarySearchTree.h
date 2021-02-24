@@ -15,8 +15,6 @@ public:
 	void remove(int toremove);
 	int height();
 	
-	void print_in_order();
-
 	void pretty_print();
 
 private:
@@ -32,7 +30,7 @@ private:
 	bool left_side_condition(TreeNode* node_to_delete, TreeNode* nearest_node);
 	bool right_side_condition(TreeNode* node_to_delete, TreeNode* nearest_node);
 	void remove_template(int toremove, TreeNode*& node, bool (BinarySearchTree::* c)(TreeNode*, TreeNode*), TreeNode* (BinarySearchTree::* f)(TreeNode*), BinarySearchTree bst);
-	void print_in_order(TreeNode* node);
+	
 	void pretty_print(const TreeNode* node);
 	void pretty_print(const std::string& prefix, const TreeNode* node, bool isLeft);
 	

@@ -133,10 +133,15 @@ TreeNode* BinarySearchTree::get_nearest_small_node(TreeNode * node)
 		get_nearest_small_node(node->left);
 	}
 	else if (node->right != nullptr) {
-		return node->right;
+		if (node->right->left == nullptr && node->right->right == nullptr) {
+			TreeNode* temp = node->right;
+			node->right = nullptr;
+			return temp;
+		}
+		get_nearest_small_node(node->right);
 	}
 	else {
-		return nullptr;
+		return node;
 	}
 }
 TreeNode* BinarySearchTree::get_nearest_big_node(TreeNode * node)
@@ -152,23 +157,16 @@ TreeNode* BinarySearchTree::get_nearest_big_node(TreeNode * node)
 		get_nearest_big_node(node->right);
 	}
 	else if (node->left != nullptr) {
-		return node->left;
+		if (node->left->left == nullptr && node->left->right == nullptr) {
+			TreeNode* temp = node->left;
+			node->left = nullptr;
+			return temp;
+		}
+		get_nearest_big_node(node->left);
 	}
 	else {
-		return nullptr;
+		return node;
 	}
-}
-
-void BinarySearchTree::print_in_order()
-{
-	print_in_order(root);
-}
-void BinarySearchTree::print_in_order(TreeNode * node)
-{
-	if (node == nullptr) return;
-	print_in_order(node->left);
-	std::cout << node->data << std::endl;
-	print_in_order(node->right);
 }
 
 bool BinarySearchTree::left_side_condition(TreeNode * node_to_delete, TreeNode * nearest_node) {
@@ -182,6 +180,7 @@ void BinarySearchTree::pretty_print() {
 	pretty_print(root);
 }
 
+// Print method source: https://stackoverflow.com/a/51730733
 void BinarySearchTree::pretty_print(const std::string& prefix, const TreeNode* node, bool isLeft)
 {
 	if (node != nullptr)
