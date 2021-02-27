@@ -1,4 +1,6 @@
 #include "BinarySearchTree.h"
+#include <iostream>
+
 int main() {
 	BinarySearchTree bst = BinarySearchTree();
 

@@ -1,4 +1,5 @@
 ﻿#include "BinarySearchTree.h"
+#include <iostream>
 
 BinarySearchTree::BinarySearchTree() = default;
 BinarySearchTree::~BinarySearchTree() {
@@ -10,6 +11,7 @@ void BinarySearchTree::destruct_tree(TreeNode * node) {
 		destruct_tree(node->left);
 		destruct_tree(node->right);
 		delete node;
+		node = nullptr;
 	}
 }
 

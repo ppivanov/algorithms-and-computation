@@ -1,8 +1,5 @@
 #pragma once
 #include "TreeNode.h"
-#include <iostream>
-#include <string>
-#include <functional>
 
 class BinarySearchTree
 {
