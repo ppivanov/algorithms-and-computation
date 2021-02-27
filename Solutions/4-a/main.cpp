@@ -2,7 +2,7 @@
 int main() {
 	BinarySearchTree bst = BinarySearchTree();
 
-	int numberToDelete = 100;
+	int numberToDelete = 43;
 	/*
 	for (size_t i = 0; i < 10; i++)
 	{
@@ -31,7 +31,7 @@ int main() {
 
 	bst.pretty_print();
 
-	std::cout << "Height of tree: " << bst.height() << std::endl << std::endl;
+	std::cout << "\nHeight of tree: " << bst.height() << std::endl << std::endl;
 
 	bst.remove(numberToDelete);
 

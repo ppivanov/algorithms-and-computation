@@ -5,7 +5,7 @@ BinarySearchTree::~BinarySearchTree() {
 	destruct_tree(root);
 }
 
-void BinarySearchTree::destruct_tree(TreeNode* node) {
+void BinarySearchTree::destruct_tree(TreeNode * node) {
 	if (node != nullptr) {
 		destruct_tree(node->left);
 		destruct_tree(node->right);
@@ -42,66 +42,112 @@ void BinarySearchTree::add(int toadd, TreeNode * node)
 	}
 }
 
-void BinarySearchTree::remove_template(int toremove, TreeNode * &node, bool (BinarySearchTree:: * not_equal_condition)(TreeNode*, TreeNode*), TreeNode * (BinarySearchTree:: * get_nearest_node)(TreeNode*), BinarySearchTree bst) {
+void BinarySearchTree::remove(int toremove)
+{
+	std::cout << "Trying to remove " << toremove << "...\n\n";
+
+	if (root == nullptr) return;
+	remove(toremove, root);
+}
+void BinarySearchTree::remove(int toremove, TreeNode * node)
+{
 	if (node != nullptr) {
-		if (toremove == node->data) {
-			TreeNode* node_to_delete = node;
-			TreeNode* nearest_leaf_node = (bst.*get_nearest_node)(node_to_delete);
-
-			if ((bst.*not_equal_condition)(node_to_delete, nearest_leaf_node)) {
-				nearest_leaf_node->left = node_to_delete->left;
-				nearest_leaf_node->right = node_to_delete->right;
+		if (toremove < node->data) {
+			remove(toremove, node->left);
+		}
+		else if (toremove > node->data) {
+			remove(toremove, node->right);
+		}
+		else {
+			const int* replacement_data = get_replacement_value(node);
+			if (replacement_data == nullptr) {
+				cut_leaf(toremove, root);
+				return;
 			}
-			node = nearest_leaf_node;
+			node->data = *replacement_data;
 
-			delete node_to_delete;
 			return;
 		}
-		remove(toremove, node);
 	}
 	else {
 		std::cout << toremove << " not found" << std::endl;
 		return;
 	}
 }
-void BinarySearchTree::remove(int toremove)
+const int* BinarySearchTree::get_replacement_value(TreeNode * node)
 {
-	if (root == nullptr) return;
+	if (node == nullptr) return nullptr;
 
-	remove(toremove, root);
-}
-void BinarySearchTree::remove(int toremove, TreeNode * node)
-{
-	BinarySearchTree bst;
-	if (toremove < node->data) {
-		remove_template(
-			toremove,
-			node->left,
-			&BinarySearchTree::left_side_condition,
-			&BinarySearchTree::get_nearest_big_node,
-			bst);
-	}
-	else if (toremove > node->data) {
-		remove_template(
-			toremove,
-			node->right,
-			&BinarySearchTree::right_side_condition,
-			&BinarySearchTree::get_nearest_small_node,
-			bst);
-	}
-	else {
-		TreeNode* old_root = root;
-		root = old_root->right;
-		TreeNode* leaf_node = get_nearest_small_node(root);
-		if (leaf_node != nullptr) {
-			leaf_node->left = old_root->left;
-			root->left = leaf_node;
+	if (node->right != nullptr) {
+		if (node->right->left == nullptr && node->right->right == nullptr) {				// node->right is leaf node - cut and return
+			TreeNode* temp = node->right;
+			node->right = nullptr;
+			int data = temp->data;
+			delete temp;
+			return &data;
+		}
+		else if (node->right->left != nullptr) {
+			TreeNode* temp = cut_leaf_on_left(node->right);
+			int data = temp->data;
+			delete temp;
+			return &data;
 		}
 		else {
-			root->left = old_root->left;
+			TreeNode* temp = node->right;
+			int data = temp->data;
+			node->left = temp->left;														// temp->left should always be nullptr according to the flow
+			node->right = temp->right;
+			delete temp;
+			return &data;
 		}
-		delete old_root;
 	}
+	else if (node->left != nullptr) {														// node has nothing on the right - delete and move left one level up
+		TreeNode* temp = node->left;
+		node->left = temp->left;
+		node->right = temp->right;
+		const int data = temp->data;
+
+		delete temp;
+		return &data;
+	}
+	return nullptr;																			// node to delete is a leaf node
+
+}
+TreeNode* BinarySearchTree::cut_leaf_on_left(TreeNode * node) {
+	if (node == nullptr) return nullptr;
+	if (node->left->left == nullptr && node->left->right == nullptr) {
+		TreeNode* temp = node->left;														// node->left is the leaf node - cut and return
+		node->left = nullptr;
+		return temp;
+	}
+	return cut_leaf_on_left(node->left);
+}
+void BinarySearchTree::cut_leaf(int tocut, TreeNode * node) {
+	if (node == nullptr) return;
+	if (tocut < node->data) {
+		if (node->left != nullptr && tocut == node->left->data) {
+			delete node->left;
+			node->left = nullptr;
+			return;
+		}
+		cut_leaf(tocut, node->left);
+	}
+	else if (tocut > node->data) {
+		if (node->right != nullptr && tocut == node->right->data) {
+			delete node->right;
+			node->right = nullptr;
+			return;
+		}
+		cut_leaf(tocut, node->right);
+	}
+	else {																					// it should only get to this case if the root node is the only node and it needs to be deleted
+		delete node;
+		root = nullptr;
+	}
+}
+
+void BinarySearchTree::pretty_print() {
+	pretty_print(root);
 }
 
 int BinarySearchTree::height()
@@ -120,68 +166,9 @@ int BinarySearchTree::height(TreeNode * node)
 	}
 }
 
-TreeNode* BinarySearchTree::get_nearest_small_node(TreeNode * node)
-{
-	if (node == nullptr) return nullptr;
-
-	if (node->left != nullptr) {
-		if (node->left->left == nullptr && node->left->right == nullptr) {
-			TreeNode* temp = node->left;
-			node->left = nullptr;
-			return temp;
-		}
-		get_nearest_small_node(node->left);
-	}
-	else if (node->right != nullptr) {
-		if (node->right->left == nullptr && node->right->right == nullptr) {
-			TreeNode* temp = node->right;
-			node->right = nullptr;
-			return temp;
-		}
-		get_nearest_small_node(node->right);
-	}
-	else {
-		return node;
-	}
-}
-TreeNode* BinarySearchTree::get_nearest_big_node(TreeNode * node)
-{
-	if (node == nullptr) return nullptr;
-
-	if (node->right != nullptr) {
-		if (node->right->left == nullptr && node->right->right == nullptr) {
-			TreeNode* temp = node->right;
-			node->right = nullptr;
-			return temp;
-		}
-		get_nearest_big_node(node->right);
-	}
-	else if (node->left != nullptr) {
-		if (node->left->left == nullptr && node->left->right == nullptr) {
-			TreeNode* temp = node->left;
-			node->left = nullptr;
-			return temp;
-		}
-		get_nearest_big_node(node->left);
-	}
-	else {
-		return node;
-	}
-}
-
-bool BinarySearchTree::left_side_condition(TreeNode * node_to_delete, TreeNode * nearest_node) {
-	return node_to_delete->left != nearest_node;
-}
-bool BinarySearchTree::right_side_condition(TreeNode * node_to_delete, TreeNode * nearest_node) {
-	return node_to_delete->right != nearest_node;
-}
-
-void BinarySearchTree::pretty_print() {
-	pretty_print(root);
-}
 
 // Print method source: https://stackoverflow.com/a/51730733
-void BinarySearchTree::pretty_print(const std::string& prefix, const TreeNode* node, bool isLeft)
+void BinarySearchTree::pretty_print(const std::string & prefix, const TreeNode * node, bool isLeft)
 {
 	if (node != nullptr)
 	{
@@ -198,7 +185,7 @@ void BinarySearchTree::pretty_print(const std::string& prefix, const TreeNode* n
 	}
 }
 
-void BinarySearchTree::pretty_print(const TreeNode* node)
+void BinarySearchTree::pretty_print(const TreeNode * node)
 {
 	pretty_print("", node, false);
 }
