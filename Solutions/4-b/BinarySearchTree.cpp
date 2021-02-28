@@ -44,6 +44,22 @@ void BinarySearchTree::add(char toadd, TreeNode* node)
 	}
 }
 
+bool BinarySearchTree::find(char key)
+{
+	return find(key, root);
+}
+bool BinarySearchTree::find(char key, TreeNode* node)
+{
+	if (node == nullptr) return false;
+	if(node->data == key) return true;
+
+	if(key < node->data)
+		return find(key, node->left);
+	
+	if(key > node->data)
+		return find(key, node->right);
+}
+
 void BinarySearchTree::print_in_order() {
 	print_in_order(root);
 }

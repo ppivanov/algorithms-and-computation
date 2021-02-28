@@ -9,6 +9,7 @@ public:
 	~BinarySearchTree();
 
 	void add(char toadd);
+	bool find(char key);
 
 	void print_in_order();
 	void print_pre_order();
@@ -18,6 +19,7 @@ private:
 	void destruct_tree(TreeNode* node);
 
 	void add(char toadd, TreeNode* node);
+	bool find(char key, TreeNode* node);
 
 	void print_in_order(TreeNode* node);
 	void print_pre_order(TreeNode* node);
