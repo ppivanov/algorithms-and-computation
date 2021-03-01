@@ -1,5 +1,6 @@
 ﻿#include "BinarySearchTree.h"
 #include <iostream>
+#include <string>
 
 BinarySearchTree::BinarySearchTree() = default;
 BinarySearchTree::~BinarySearchTree() {
@@ -170,7 +171,7 @@ int BinarySearchTree::height(TreeNode * node)
 
 
 // Print method source: https://stackoverflow.com/a/51730733
-void BinarySearchTree::pretty_print(const std::string & prefix, const TreeNode * node, bool isLeft)
+void BinarySearchTree::pretty_print(std::string prefix, const TreeNode* node, bool isLeft)
 {
 	if (node != nullptr)
 	{
