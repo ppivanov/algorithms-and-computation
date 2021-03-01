@@ -65,7 +65,7 @@ void is_vectorsum_eq_sum(const vector<int>& path, int sum, bool& path_exists) {
 int BinarySearchTree::has_path_sum(int sum) {
 	return has_path_sum(root, sum);
 }
-int BinarySearchTree::has_path_sum(TreeNode* node, int sum) {
+int BinarySearchTree::has_path_sum(TreeNode* node, int sum) {	// merge this with function above
 	vector<int> paths;
 	bool path_exists = false;
 	path_recursively(root, paths, sum, path_exists);
