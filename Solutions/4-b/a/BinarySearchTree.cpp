@@ -1,6 +1,10 @@
 ﻿#include "BinarySearchTree.h"
 #include <iostream>
 #include <string>
+#include <vector>
+using std::vector;
+using std::cout;
+using std::endl;
 
 BinarySearchTree::BinarySearchTree() = default;
 BinarySearchTree::~BinarySearchTree() {
@@ -45,12 +49,55 @@ void BinarySearchTree::add(int toadd, TreeNode * node)
 	}
 }
 
+void is_vectorsum_eq_sum(const vector<int>& path, int sum, bool& path_exists) {
+	int path_sum = 0;
+	cout << "\nPath: ";
+	for (int i = 0; i < path.size(); i++) {
+		path_sum += path[i];
+		cout << path[i] << " ";
+	}
+	cout << "\b, sum: " << path_sum << endl;
+	path_exists = (sum == path_sum);
+}
 
-void BinarySearchTree::pretty_print() {
-	pretty_print(root);
+// Function source: https://www.geeksforgeeks.org/given-a-binary-tree-print-all-root-to-leaf-paths/
+// Accessed: 3 Mar, 2021
+int BinarySearchTree::has_path_sum(int sum) {
+	return has_path_sum(root, sum);
+}
+int BinarySearchTree::has_path_sum(TreeNode* node, int sum) {
+	vector<int> paths;
+	bool path_exists = false;
+	path_recursively(root, paths, sum, path_exists);
+	return path_exists;
+}
+void BinarySearchTree::path_recursively(TreeNode* node, vector<int> path, int sum, bool& path_exists)
+{
+	if (path_exists) return;
+	if (node == nullptr)
+		return;
+
+	path.push_back(node->data);
+
+	if (node->left == nullptr && node->right == nullptr)
+	{
+		is_vectorsum_eq_sum(path, sum, path_exists);
+	}
+	else
+	{
+		path_recursively(node->left, path, sum, path_exists);
+		path_recursively(node->right, path, sum, path_exists);
+	}
 }
 
 // Print method source: https://stackoverflow.com/a/51730733
+void BinarySearchTree::pretty_print() {
+	pretty_print(root);
+}
+void BinarySearchTree::pretty_print(const TreeNode * node)
+{
+	pretty_print("", node, false);
+}
 void BinarySearchTree::pretty_print(std::string prefix, const TreeNode * node, bool isLeft)
 {
 	if (node != nullptr)
@@ -66,9 +113,4 @@ void BinarySearchTree::pretty_print(std::string prefix, const TreeNode * node, b
 		pretty_print(prefix + (isLeft ? "|   " : "    "), node->left, true);
 		pretty_print(prefix + (isLeft ? "|   " : "    "), node->right, false);
 	}
-}
-
-void BinarySearchTree::pretty_print(const TreeNode * node)
-{
-	pretty_print("", node, false);
 }
