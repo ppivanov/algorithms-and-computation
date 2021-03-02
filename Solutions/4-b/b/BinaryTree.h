@@ -14,7 +14,8 @@ public:
 	~BinaryTree();
 	
 	void add(int toadd);
-	bool is_binary_search_tree();
+	bool is_BST();
+	bool is_BST_Recur();
 
 	void pretty_print();
 
@@ -23,8 +24,14 @@ private:
 
 	void add(int toadd, queue<TreeNode*> queue); 
 	void add(int toadd, TreeNode* node);
-	void is_binary_search_tree(TreeNode* node, vector<int>, bool& is_ok);
+
+	int is_BST(TreeNode* node, vector<int>);
 	bool path_is_correct(vector<int> path);
+	int is_BST_Recur(TreeNode* node, int& min, int& max) ;
+
+	int min_value(TreeNode* node);
+	int min_value_unordered(TreeNode* node, int& min);
+	int max_value_unordered(TreeNode* node, int& max);
 
 	void pretty_print(const TreeNode* node);
 	void pretty_print(std::string prefix, const TreeNode* node, bool isLeft);
