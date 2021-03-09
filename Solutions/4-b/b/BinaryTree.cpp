@@ -70,7 +70,6 @@ int BinaryTree::is_BST_Recur(TreeNode* node, int& min, int& max) {
 	if (node == nullptr) return 1;
 	
 	int min_left_branch = min_value_unordered(node->right, min);
-
 	int max_left_branch = max_value_unordered(node->left, max);
 
 	if (min_left_branch > node->data && node->data > max_left_branch) return 1;
