@@ -4,6 +4,7 @@
         "*.cs": "csharp",
         "iosfwd": "cpp",
         "istream": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "fstream": "cpp"
     }
 }
