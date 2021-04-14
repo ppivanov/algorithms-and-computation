@@ -4,7 +4,7 @@ using namespace std;
 
 TextCompression::TextCompression() = default;
 
-string TextCompression::encode(const string& input, ofstream& out_file) {
+string TextCompression::encode_as_string_of_binary(const string& input, ofstream& out_file) {
 	if (input.length() < 2) {																// shortcut execution and return the input string. No point encoding it.
 		return input;
 	}
@@ -12,15 +12,9 @@ string TextCompression::encode(const string& input, ofstream& out_file) {
 	map<char, int> char_frequency = get_char_frequency(input);
 
 	HuffmanTree* huffman_tree = get_huffman_tree_from_map(char_frequency);
-	cout << *huffman_tree << "\n\n";
+	//cout << *huffman_tree << "\n\n";
 
-	map<char, int> char_path;
-
-	for (pair<char, int> char_pair : char_frequency) {
-		string path_to_char = huffman_tree->get_path_to_char(char_pair.first);
-
-		cout << char_pair.first << "\t" << path_to_char << "\n";
-	}
+	map<char, string> char_path = get_char_mapping_from_tree(huffman_tree, char_frequency);
 
 	return "";
 }
@@ -74,4 +68,17 @@ priority_queue<HuffmanTree*, vector<HuffmanTree*>, CompareHuffmanTree> TextCompr
 		}
 	
 		return tree_queue;
+}
+
+map<char, string> TextCompression::get_char_mapping_from_tree(HuffmanTree* huffman_tree, map<char, int> char_frequency) {
+	map<char, string> char_path;
+
+	for (pair<char, int> char_pair : char_frequency) {
+		string path_to_char = huffman_tree->get_path_to_char(char_pair.first);
+
+		char_path.insert(pair<char, string>(char_pair.first, path_to_char));
+		//cout << char_pair.first << "\t" << path_to_char;
+	}
+
+	return char_path;
 }

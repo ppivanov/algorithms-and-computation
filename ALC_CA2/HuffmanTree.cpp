@@ -42,7 +42,7 @@ string HuffmanTree::get_path_to_char(char to_find, HuffmanNode* node, string pat
 			return returned_path;
 	}
 
-	return "";
+	return "";																				// return an empty string if there wasn't a match
 }
 
 bool CompareHuffmanTree::operator() (const HuffmanTree* lhs, const HuffmanTree* rhs) const
