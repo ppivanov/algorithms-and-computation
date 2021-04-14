@@ -4,20 +4,21 @@ using namespace std;
 
 TextCompression::TextCompression() = default;
 
-string TextCompression::encode_as_string_of_binary(const string& input, ofstream& out_file) {
-	if (input.length() < 2) {																			// shortcut execution and return the input string. No point encoding it.
+// Section A - task 4
+string TextCompression::encode_input_text(const string& input, ofstream& out_file, HuffmanTree*& huffman_tree_out) {
+	if (input.length() < 2) {																							// shortcut execution and return the input string. No point encoding it.
 		return input;
 	}
 
 	map<char, int> char_frequency;
 	populate_char_frequency(input, char_frequency);
 
-	HuffmanTree* huffman_tree = get_huffman_tree_from_map(char_frequency);
+	huffman_tree_out = get_huffman_tree_from_map(char_frequency);
 	//cout << *huffman_tree << "\n\n";
 
-	map<char, string> char_encoding = get_char_mapping_from_tree(huffman_tree, char_frequency);			// This line warns about a memory leak in the function, still, nothing is being created nor detatched
+	map<char, string> char_encoding = get_char_mapping_from_tree(huffman_tree_out, char_frequency);						// This line warns about a memory leak in the function, still, nothing is being created nor detatched
 
-	string input_as_1_0_string = encode_as_string_of_binary_from_map(input, char_encoding);
+	string input_as_1_0_string = encode_from_char_mapping(input, char_encoding);
 	out_file << input_as_1_0_string;
 
 	return input_as_1_0_string;
@@ -83,11 +84,38 @@ map<char, string> TextCompression::get_char_mapping_from_tree(HuffmanTree* huffm
 	return char_path;
 }
 
-string TextCompression::encode_as_string_of_binary_from_map(const string& input, const map<char, string>& char_encoding) {
+string TextCompression::encode_from_char_mapping(const string& input, const map<char, string>& char_encoding) {
 	string encoded_string = "";
 	for (char input_char : input) {
 		encoded_string.append(char_encoding.at(input_char));
 	}
 
 	return encoded_string;
+}
+
+string TextCompression::decode_input_text(const string& input, ofstream& out_file, const HuffmanTree* huffman_tree) {
+	string decoded_string = "";
+	string traversed = "";
+	HuffmanTree traversal_copy = *huffman_tree;
+	for (int i = 0; i <= input.size(); ++i) {
+		if (traversal_copy.root->data != 0) {																			// There is a char at this position. Add it to the string and reset the path.
+			decoded_string.push_back(traversal_copy.root->data);
+			traversal_copy = *huffman_tree;
+			--i;
+		}
+		else if(i != input.size()) {
+			if (input[i] == '0') {
+				traversed += '0';
+				traversal_copy = *(traversal_copy.root->left);
+			}
+			else {
+				traversed += '1';
+				traversal_copy = *(traversal_copy.root->right);
+			}
+		}
+	}
+
+	out_file << decoded_string;
+
+	return decoded_string;
 }

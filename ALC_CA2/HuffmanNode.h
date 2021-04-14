@@ -17,6 +17,7 @@ private:
 	HuffmanTree* right = nullptr;
 
 	friend class HuffmanTree;
+	friend class TextCompression;
 	friend ostream& operator<<(ostream& out, const HuffmanNode& node);
 };
 
