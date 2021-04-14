@@ -1,16 +1,30 @@
 #pragma once
 #include "HuffmanNode.h"
+#include <iostream>
+
+using std::ostream;
 
 class HuffmanTree
 {
+
 public:
 	HuffmanTree();
 	HuffmanTree(char data_in, int weight_in);
+	HuffmanTree(HuffmanTree* left_tree, HuffmanTree* right_node, int total_weight);
 
-	friend bool operator<(const HuffmanTree& lhs, const HuffmanTree& rhs);
 private:
-	int weight = -1;													// in-class initialization of the data members
-	HuffmanNode* root = nullptr;
+
+	HuffmanNode *root;
+	int weight = -1;																		// in-class initialization of the data members
 
 	friend class TextCompression;
+	friend class CompareHuffmanTree;
+	friend ostream& operator<<(ostream& out, const HuffmanTree& tree);
+	friend bool operator<(const HuffmanTree& lhs, const HuffmanTree& rhs);
+};
+
+class CompareHuffmanTree
+{
+public:
+	bool operator() (const HuffmanTree* lhs, const HuffmanTree* rhs) const;
 };
