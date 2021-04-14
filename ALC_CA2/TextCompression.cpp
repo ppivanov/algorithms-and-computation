@@ -1,36 +1,32 @@
 #include "TextCompression.h"
+#include <streambuf>
 
 using namespace std;
 
+// Private functions
+
 TextCompression::TextCompression() = default;
 
-// Section A - task 4
-string TextCompression::encode_input_text(const string& input, ofstream& out_file, HuffmanTree*& huffman_tree_out) {
-	if (input.length() < 2) {																							// shortcut execution and return the input string. No point encoding it.
-		return input;
+string TextCompression::encode_from_char_mapping(const string & input, const map<char, string>&char_encoding) {
+	string encoded_string = "";
+	for (char input_char : input) {
+		encoded_string.append(char_encoding.at(input_char));
 	}
 
-	map<char, int> char_frequency;
-	populate_char_frequency(input, char_frequency);
-
-	huffman_tree_out = get_huffman_tree_from_map(char_frequency);
-	//cout << *huffman_tree << "\n\n";
-
-	map<char, string> char_encoding = get_char_mapping_from_tree(huffman_tree_out, char_frequency);						// This line warns about a memory leak in the function, still, nothing is being created nor detatched
-
-	string input_as_1_0_string = encode_from_char_mapping(input, char_encoding);
-	out_file << input_as_1_0_string;
-
-	return input_as_1_0_string;
+	return encoded_string;
 }
 
-void TextCompression::populate_char_frequency(const string &input, map<char, int>& char_frequency) {
-	for (char current_char : input) {
-		if (char_frequency.find(current_char) == char_frequency.end())
-			char_frequency.insert(pair<char, int>(current_char, 1));
-		else
-			char_frequency[current_char]++;
+map<char, string> TextCompression::get_char_mapping_from_tree(HuffmanTree* huffman_tree, map<char, int> char_frequency) {
+	map<char, string> char_path;
+
+	for (pair<char, int> char_pair : char_frequency) {
+		string path_to_char = huffman_tree->get_path_to_char(char_pair.first);
+
+		char_path.insert(pair<char, string>(char_pair.first, path_to_char));
+		//cout << char_pair.first << "\t" << path_to_char << "\n";
 	}
+
+	return char_path;
 }
 
 HuffmanTree* TextCompression::get_huffman_tree_from_map(map<char, int> char_frequency)
@@ -58,7 +54,7 @@ HuffmanTree* TextCompression::get_huffman_tree_from_map(map<char, int> char_freq
 	return final_tree;
 }
 
-priority_queue<HuffmanTree*, vector<HuffmanTree*>, CompareHuffmanTree> 
+priority_queue<HuffmanTree*, vector<HuffmanTree*>, CompareHuffmanTree>
 	TextCompression::get_priority_queue_from_map(map<char, int> char_frequency) {
 		priority_queue<HuffmanTree*, vector<HuffmanTree*>, CompareHuffmanTree> tree_queue;
 
@@ -67,31 +63,42 @@ priority_queue<HuffmanTree*, vector<HuffmanTree*>, CompareHuffmanTree>
 			tree_queue.push(new HuffmanTree(it->first, it->second));
 			it++;
 		}
-	
+
 		return tree_queue;
 }
 
-map<char, string> TextCompression::get_char_mapping_from_tree(HuffmanTree* huffman_tree, map<char, int> char_frequency) {
-	map<char, string> char_path;
+void TextCompression::get_string_from_file(ifstream& in_file, string& out)
+{
+	/***************************************************************************************
+	*    Usage: Used
+	*    Title: Read whole ASCII file into C++ std::string [duplicate]
+	*    Author: McHenry, T [StackOverflow] (editted by resueman [StackOverflow])
+	*	 Date posted: 8 April 2010
+	*	 Type: Source code
+	*    Availability: https://stackoverflow.com/a/2602060
+	*    Accessed on: 15 April 2021
+	*
+	***************************************************************************************/
 
-	for (pair<char, int> char_pair : char_frequency) {
-		string path_to_char = huffman_tree->get_path_to_char(char_pair.first);
+	in_file.seekg(0, std::ios::end);
+	out.reserve(in_file.tellg());
+	in_file.seekg(0, std::ios::beg);
 
-		char_path.insert(pair<char, string>(char_pair.first, path_to_char));
-		cout << char_pair.first << "\t" << path_to_char << "\n";
-	}
-
-	return char_path;
+	out.assign((std::istreambuf_iterator<char>(in_file)),
+		std::istreambuf_iterator<char>());
 }
 
-string TextCompression::encode_from_char_mapping(const string& input, const map<char, string>& char_encoding) {
-	string encoded_string = "";
-	for (char input_char : input) {
-		encoded_string.append(char_encoding.at(input_char));
+void TextCompression::populate_char_frequency(const string& input, map<char, int>& char_frequency) {
+	for (char current_char : input) {
+		if (char_frequency.find(current_char) == char_frequency.end())
+			char_frequency.insert(pair<char, int>(current_char, 1));
+		else
+			char_frequency[current_char]++;
 	}
-
-	return encoded_string;
 }
+
+
+// Public functions
 
 string TextCompression::decode_input_text(const string& input, ofstream& out_file, const HuffmanTree* huffman_tree) {
 	string decoded_string = "";
@@ -114,8 +121,57 @@ string TextCompression::decode_input_text(const string& input, ofstream& out_fil
 			}
 		}
 	}
-
 	out_file << decoded_string;
 
 	return decoded_string;
 }
+
+void TextCompression::decode_input_file(ifstream& in_file, ofstream& out_file, const HuffmanTree* huffman_tree)
+{
+	string input_text;
+	get_string_from_file(in_file, input_text);
+
+	string decoded_string = decode_input_text(input_text, out_file, huffman_tree);
+
+	cout << decoded_string;
+}
+
+// Section A - task 4
+string TextCompression::encode_input_text(const string& input, ofstream& out_file, HuffmanTree*& huffman_tree_out) {
+	if (input.length() < 2) {																							// shortcut execution and return the input string. No point encoding it.
+		return input;
+	}
+
+	map<char, int> char_frequency;
+	populate_char_frequency(input, char_frequency);
+
+	huffman_tree_out = get_huffman_tree_from_map(char_frequency);
+	//cout << *huffman_tree << "\n\n";
+
+	map<char, string> char_encoding = get_char_mapping_from_tree(huffman_tree_out, char_frequency);						// This line warns about a memory leak in the function, still, nothing is being created nor detatched
+
+	string input_as_1_0_string = encode_from_char_mapping(input, char_encoding);
+	out_file << input_as_1_0_string;
+
+	return input_as_1_0_string;
+}
+
+HuffmanTree* TextCompression::encode_input_file(ifstream& in_file, ofstream& out_file)
+{
+	HuffmanTree* huffman_tree;
+	string input_text;
+	get_string_from_file(in_file, input_text);
+
+	string encoded_string = encode_input_text(input_text, out_file, huffman_tree);
+
+	return huffman_tree;
+}
+
+
+//void TextCompression::compress_input_file(const ifstream& input_file, ofstream& out_file) {
+//	// extract text as string
+//	// encode text
+//	// break up text into 8-bit chunks and get character for each one
+//	// save the string
+//}
+
