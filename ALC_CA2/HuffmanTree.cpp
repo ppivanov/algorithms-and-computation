@@ -45,11 +45,6 @@ string HuffmanTree::get_path_to_char(char to_find, HuffmanNode* node, string pat
 	return "";																				// return an empty string if there wasn't a match
 }
 
-bool CompareHuffmanTree::operator() (const HuffmanTree* lhs, const HuffmanTree* rhs) const
-{
-	return lhs->weight > rhs->weight;
-}
-
 ostream& operator<<(ostream& out, const HuffmanTree& tree) {
 	if ( &tree != nullptr && tree.root != nullptr) {
 		out << tree.weight;
@@ -57,5 +52,10 @@ ostream& operator<<(ostream& out, const HuffmanTree& tree) {
 	}
 
 	return out;
+}
+
+bool CompareHuffmanTree::operator() (const HuffmanTree* lhs, const HuffmanTree* rhs) const
+{
+	return lhs->weight > rhs->weight;
 }
 
