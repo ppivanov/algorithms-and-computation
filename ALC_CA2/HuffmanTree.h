@@ -2,7 +2,7 @@
 #include "HuffmanNode.h"
 #include <iostream>
 
-using std::ostream;
+using namespace std;
 
 class HuffmanTree
 {

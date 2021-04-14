@@ -1,8 +1,7 @@
 #include "HuffmanTree.h"																	// include the class file as it was only declared in the Node header file
 #include "HuffmanNode.h"
-#include <iostream>
 
-using std::ostream;
+using namespace std;
 
 HuffmanNode::HuffmanNode() = default;
 

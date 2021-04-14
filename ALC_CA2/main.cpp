@@ -1,14 +1,13 @@
+#include "TextCompression.h"
 #include <fstream>
 #include <iostream>
-#include "TextCompression.h"
 
-using std::ofstream;
+using namespace std;
 
 int main() {
 
 	ofstream temp = ofstream("a.txt");
-	//TextCompression::encode("Eerie eyes seen near lake.", temp);
-	TextCompression::encode("E", temp);
+	TextCompression::encode("Eerie eyes seen near lake.", temp);
 
 	return 0;
 }

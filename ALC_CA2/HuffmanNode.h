@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-using std::ostream;
+using namespace std;
 
 class HuffmanTree;																			// declare class to avoid compilation errors
 class HuffmanNode

@@ -1,7 +1,6 @@
 #include "HuffmanTree.h"
-#include <iostream>
 
-using std::ostream;
+using namespace std;
 
 HuffmanTree::HuffmanTree() = default;
 
