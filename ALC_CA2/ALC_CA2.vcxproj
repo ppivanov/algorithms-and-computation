@@ -139,10 +139,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="HuffmanNode.cpp" />
+    <ClCompile Include="HuffmanTree.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TextCompression.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="HuffmanNode.h" />
+    <ClInclude Include="HuffmanTree.h" />
     <ClInclude Include="TextCompression.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

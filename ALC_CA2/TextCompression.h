@@ -18,5 +18,5 @@ public:
 private:
 	TextCompression();
 
-	static map<char, int> get_char_frequency(const string &input);
+	static void fill_char_frequency(const string& input, map<char, int>& char_frequency);
 };
