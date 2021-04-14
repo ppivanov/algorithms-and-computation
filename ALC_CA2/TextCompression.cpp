@@ -9,21 +9,33 @@ string TextCompression::encode(const string& input, ofstream& out_file) {
 		return input;
 	}
 
-	map<char, int> char_frequency;
-	fill_char_frequency(input, char_frequency);
+	map<char, int> char_frequency = get_char_frequency(input);
 
 	HuffmanTree* huffman_tree = get_huffman_tree_from_map(char_frequency);
+	cout << *huffman_tree << "\n\n";
+
+	map<char, int> char_path;
+
+	for (pair<char, int> char_pair : char_frequency) {
+		string path_to_char = huffman_tree->get_path_to_char(char_pair.first);
+
+		cout << char_pair.first << "\t" << path_to_char << "\n";
+	}
 
 	return "";
 }
 
-void TextCompression::fill_char_frequency(const string &input, map<char, int>& char_frequency) {
+map<char, int> TextCompression::get_char_frequency(const string &input) {
+	map<char, int> char_frequency;
+
 	for (char current_char : input) {
 		if (char_frequency.find(current_char) == char_frequency.end())
 			char_frequency.insert(pair<char, int>(current_char, 1));
 		else
 			char_frequency[current_char]++;
 	}
+
+	return char_frequency;
 }
 
 HuffmanTree* TextCompression::get_huffman_tree_from_map(map<char, int> char_frequency)
@@ -47,7 +59,6 @@ HuffmanTree* TextCompression::get_huffman_tree_from_map(map<char, int> char_freq
 	tree_queue.pop();
 
 	HuffmanTree* final_tree = new HuffmanTree(first_pop, second_pop, first_pop->weight + second_pop->weight);
-	std::cout << *final_tree;
 
 	return final_tree;
 }

@@ -13,7 +13,7 @@ class TextCompression
 {
 private:
 	TextCompression();
-	static void fill_char_frequency(const string& input, map<char, int>& char_frequency);
+	static map<char, int> get_char_frequency(const string& input);
 	static priority_queue<HuffmanTree*, vector<HuffmanTree*>, CompareHuffmanTree> get_priority_queue_from_map(map<char, int> char_frequency);
 	static HuffmanTree* get_huffman_tree_from_map(map<char, int> char_frequency);
 public:

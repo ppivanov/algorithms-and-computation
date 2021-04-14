@@ -14,16 +14,41 @@ HuffmanTree::HuffmanTree(HuffmanTree* left_tree, HuffmanTree* right_node, int to
 
 	root->left = left_tree;
 	root->right = right_node;
-};
+}
+
+string HuffmanTree::get_path_to_char(char to_find)
+{
+	return get_path_to_char(to_find, root, "");
+}
+
+string HuffmanTree::get_path_to_char(char to_find, HuffmanNode* node, string path)
+{
+	if (node == nullptr || node->data == to_find)
+		return path;
+
+	if (node->left != nullptr) {
+		path.push_back('0');																// add a 0 to the vector before moving to the left side of the tree
+		string returned_path = get_path_to_char(to_find, node->left->root, path);
+		if (returned_path != "") 
+			return returned_path;
+		
+		path.pop_back();																	// remove the 0 since it has already been visited
+	}
+
+	if (node->right != nullptr) {
+		path.push_back('1');																// add a 1 to the vector before moving to the right side
+		string returned_path = get_path_to_char(to_find, node->right->root, path);
+		if (returned_path != "")
+			return returned_path;
+	}
+
+	return "";
+}
 
 bool CompareHuffmanTree::operator() (const HuffmanTree* lhs, const HuffmanTree* rhs) const
 {
 	return lhs->weight > rhs->weight;
 }
-
-bool operator<(const HuffmanTree& lhs, const HuffmanTree& rhs) {
-	return lhs.weight > rhs.weight;															// Inverted so that the Trees are sorted in ascending order in the priority queue
-}																							// This can be confusing to readers. TODO: refactor this to a comparator function instead
 
 ostream& operator<<(ostream& out, const HuffmanTree& tree) {
 	if ( &tree != nullptr && tree.root != nullptr) {
