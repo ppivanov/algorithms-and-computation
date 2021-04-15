@@ -16,7 +16,7 @@ int main() {
 	ifstream initial_in("initial.txt");
 	ofstream encoded_out("encoded.txt");
 
-	huffman_tree = TextCompression::encode_input_file(initial_in, encoded_out);
+	huffman_tree = TextCompression::encode_input_file_to_file(initial_in, encoded_out);
 
 	initial_in.close();
 	encoded_out.close();
@@ -26,7 +26,7 @@ int main() {
 	ifstream encoded_in("encoded.txt");
 	ofstream decoded_out("decoded.txt");
 
-	TextCompression::decode_input_file(encoded_in, decoded_out, huffman_tree);
+	TextCompression::decode_input_file_to_file(encoded_in, decoded_out, huffman_tree);
 
 	encoded_in.close();
 	decoded_out.close();

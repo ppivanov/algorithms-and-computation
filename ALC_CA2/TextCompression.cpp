@@ -3,9 +3,26 @@
 
 using namespace std;
 
+TextCompression::TextCompression() = default;
+
+
 // Private functions
 
-TextCompression::TextCompression() = default;
+string TextCompression::encode_input_text(const string& input, HuffmanTree*& huffman_tree_out) {
+	if (input.length() < 2)																								// shortcut execution and return the input string. No point encoding it.
+		return input;
+
+	map<char, int> char_frequency;
+	populate_char_frequency(input, char_frequency);
+
+	huffman_tree_out = get_huffman_tree_from_map(char_frequency);
+	//cout << *huffman_tree << "\n\n";
+
+	map<char, string> char_encoding = get_char_mapping_from_tree(huffman_tree_out, char_frequency);						// This line warns about a memory leak in the function, still, nothing is being created nor detatched
+	string encoded_string = encode_from_char_mapping(input, char_encoding);
+
+	return encoded_string;
+}
 
 string TextCompression::encode_from_char_mapping(const string & input, const map<char, string>&char_encoding) {
 	string encoded_string = "";
@@ -100,7 +117,7 @@ void TextCompression::populate_char_frequency(const string& input, map<char, int
 
 // Public functions
 
-string TextCompression::decode_input_text(const string& input, ofstream& out_file, const HuffmanTree* huffman_tree) {
+string TextCompression::decode_input_text_to_file(const string& input, ofstream& out_file, const HuffmanTree* huffman_tree) {
 	string decoded_string = "";
 	string traversed = "";
 	HuffmanTree traversal_copy = *huffman_tree;
@@ -126,52 +143,57 @@ string TextCompression::decode_input_text(const string& input, ofstream& out_fil
 	return decoded_string;
 }
 
-void TextCompression::decode_input_file(ifstream& in_file, ofstream& out_file, const HuffmanTree* huffman_tree)
+void TextCompression::decode_input_file_to_file(ifstream& in_file, ofstream& out_file, const HuffmanTree* huffman_tree)
 {
 	string input_text;
 	get_string_from_file(in_file, input_text);
 
-	string decoded_string = decode_input_text(input_text, out_file, huffman_tree);
+	string decoded_string = decode_input_text_to_file(input_text, out_file, huffman_tree);
 
 	cout << decoded_string;
 }
 
 // Section A - task 4
-string TextCompression::encode_input_text(const string& input, ofstream& out_file, HuffmanTree*& huffman_tree_out) {
-	if (input.length() < 2) {																							// shortcut execution and return the input string. No point encoding it.
-		return input;
-	}
+string TextCompression::encode_input_text_to_file(const string& input, ofstream& out_file, HuffmanTree*& huffman_tree_out) {
+	string encoded_string = encode_input_text(input, huffman_tree_out);
+	out_file << encoded_string;
 
-	map<char, int> char_frequency;
-	populate_char_frequency(input, char_frequency);
-
-	huffman_tree_out = get_huffman_tree_from_map(char_frequency);
-	//cout << *huffman_tree << "\n\n";
-
-	map<char, string> char_encoding = get_char_mapping_from_tree(huffman_tree_out, char_frequency);						// This line warns about a memory leak in the function, still, nothing is being created nor detatched
-
-	string input_as_1_0_string = encode_from_char_mapping(input, char_encoding);
-	out_file << input_as_1_0_string;
-
-	return input_as_1_0_string;
+	return encoded_string;
 }
 
-HuffmanTree* TextCompression::encode_input_file(ifstream& in_file, ofstream& out_file)
+HuffmanTree* TextCompression::encode_input_file_to_file(ifstream& in_file, ofstream& out_file)
 {
 	HuffmanTree* huffman_tree;
 	string input_text;
 	get_string_from_file(in_file, input_text);
 
-	string encoded_string = encode_input_text(input_text, out_file, huffman_tree);
+	string encoded_string = encode_input_text_to_file(input_text, out_file, huffman_tree);
 
 	return huffman_tree;
 }
 
 
-//void TextCompression::compress_input_file(const ifstream& input_file, ofstream& out_file) {
-//	// extract text as string
-//	// encode text
+//void TextCompression::compress_input_file(ifstream& in_file, ofstream& out_file) {
+//	HuffmanTree* huffman_tree;
+//	string input_text;
+//	get_string_from_file(in_file, input_text);
+//
+//	string encoded_string = encode_input_text_to_file(input_text, out_file, huffman_tree);
+//
+//	return huffman_tree;
 //	// break up text into 8-bit chunks and get character for each one
 //	// save the string
 //}
-
+//
+//string get_compressed_string(const string& encoded_string) {
+//	string compressed_string = "";
+//	int bit_countdown = 8;
+//	// var current_bits
+//	for (int i = 0; i < encoded_string.size(); i++) {
+//		if (bit_countdown == 0) {
+//			// transform current_bits to character
+//			// add character to compressed_string
+//			bit_countdown = 8;
+//		}
+//	}
+//}
