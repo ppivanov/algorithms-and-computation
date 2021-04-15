@@ -14,6 +14,7 @@ class TextCompression
 private:
 	TextCompression();
 
+	static string decode_input_text(const string& input, const HuffmanTree* huffman_tree);
 	static string encode_input_text(const string& input, HuffmanTree*& huffman_tree_out);
 
 	static string encode_from_char_mapping(const string& input, const map<char, string>& char_encoding);

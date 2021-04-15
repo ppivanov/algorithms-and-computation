@@ -8,6 +8,31 @@ TextCompression::TextCompression() = default;
 
 // Private functions
 
+string TextCompression::decode_input_text(const string& input, const HuffmanTree* huffman_tree) {
+	string decoded_string = "";
+	string traversed = "";
+	HuffmanTree traversal_copy = *huffman_tree;
+	for (int i = 0; i <= input.size(); ++i) {
+		if (traversal_copy.root->data != 0) {																			// There is a char at this position. Add it to the string and reset the path.
+			decoded_string.push_back(traversal_copy.root->data);
+			traversal_copy = *huffman_tree;
+			--i;																										// Required in order to decode the last character
+		}
+		else if (i != input.size()) {
+			if (input[i] == '0') {
+				traversed += '0';
+				traversal_copy = *(traversal_copy.root->left);
+			}
+			else {
+				traversed += '1';
+				traversal_copy = *(traversal_copy.root->right);
+			}
+		}
+	}
+
+	return decoded_string;
+}
+
 string TextCompression::encode_input_text(const string& input, HuffmanTree*& huffman_tree_out) {
 	if (input.length() < 2)																								// shortcut execution and return the input string. No point encoding it.
 		return input;
@@ -24,7 +49,7 @@ string TextCompression::encode_input_text(const string& input, HuffmanTree*& huf
 	return encoded_string;
 }
 
-string TextCompression::encode_from_char_mapping(const string & input, const map<char, string>&char_encoding) {
+string TextCompression::encode_from_char_mapping(const string& input, const map<char, string>&char_encoding) {
 	string encoded_string = "";
 	for (char input_char : input) {
 		encoded_string.append(char_encoding.at(input_char));
@@ -118,33 +143,13 @@ void TextCompression::populate_char_frequency(const string& input, map<char, int
 // Public functions
 
 string TextCompression::decode_input_text_to_file(const string& input, ofstream& out_file, const HuffmanTree* huffman_tree) {
-	string decoded_string = "";
-	string traversed = "";
-	HuffmanTree traversal_copy = *huffman_tree;
-	for (int i = 0; i <= input.size(); ++i) {
-		if (traversal_copy.root->data != 0) {																			// There is a char at this position. Add it to the string and reset the path.
-			decoded_string.push_back(traversal_copy.root->data);
-			traversal_copy = *huffman_tree;
-			--i;
-		}
-		else if(i != input.size()) {
-			if (input[i] == '0') {
-				traversed += '0';
-				traversal_copy = *(traversal_copy.root->left);
-			}
-			else {
-				traversed += '1';
-				traversal_copy = *(traversal_copy.root->right);
-			}
-		}
-	}
+	string decoded_string = decode_input_text(input, huffman_tree);
 	out_file << decoded_string;
 
 	return decoded_string;
 }
 
-void TextCompression::decode_input_file_to_file(ifstream& in_file, ofstream& out_file, const HuffmanTree* huffman_tree)
-{
+void TextCompression::decode_input_file_to_file(ifstream& in_file, ofstream& out_file, const HuffmanTree* huffman_tree) {
 	string input_text;
 	get_string_from_file(in_file, input_text);
 
@@ -153,7 +158,6 @@ void TextCompression::decode_input_file_to_file(ifstream& in_file, ofstream& out
 	cout << decoded_string;
 }
 
-// Section A - task 4
 string TextCompression::encode_input_text_to_file(const string& input, ofstream& out_file, HuffmanTree*& huffman_tree_out) {
 	string encoded_string = encode_input_text(input, huffman_tree_out);
 	out_file << encoded_string;
@@ -161,8 +165,7 @@ string TextCompression::encode_input_text_to_file(const string& input, ofstream&
 	return encoded_string;
 }
 
-HuffmanTree* TextCompression::encode_input_file_to_file(ifstream& in_file, ofstream& out_file)
-{
+HuffmanTree* TextCompression::encode_input_file_to_file(ifstream& in_file, ofstream& out_file) {
 	HuffmanTree* huffman_tree;
 	string input_text;
 	get_string_from_file(in_file, input_text);
