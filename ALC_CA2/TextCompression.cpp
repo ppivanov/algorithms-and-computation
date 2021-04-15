@@ -1,5 +1,6 @@
 #include "TextCompression.h"
-#include <streambuf>
+#include <sstream>
+#include <bitset>
 
 using namespace std;
 
@@ -176,27 +177,52 @@ HuffmanTree* TextCompression::encode_input_file_to_file(ifstream& in_file, ofstr
 }
 
 
-//void TextCompression::compress_input_file(ifstream& in_file, ofstream& out_file) {
-//	HuffmanTree* huffman_tree;
-//	string input_text;
-//	get_string_from_file(in_file, input_text);
-//
-//	string encoded_string = encode_input_text_to_file(input_text, out_file, huffman_tree);
-//
-//	return huffman_tree;
-//	// break up text into 8-bit chunks and get character for each one
-//	// save the string
-//}
-//
-//string get_compressed_string(const string& encoded_string) {
-//	string compressed_string = "";
-//	int bit_countdown = 8;
-//	// var current_bits
-//	for (int i = 0; i < encoded_string.size(); i++) {
-//		if (bit_countdown == 0) {
-//			// transform current_bits to character
-//			// add character to compressed_string
-//			bit_countdown = 8;
-//		}
-//	}
-//}
+void TextCompression::compress_input_file(ifstream& in_file, ofstream& out_file) {
+	HuffmanTree* huffman_tree;
+	string input_text;
+	get_string_from_file(in_file, input_text);
+
+	string encoded_string = encode_input_text(input_text, huffman_tree);								// false-positive warning for memory leak
+
+	string compressed_string = get_compressed_string(encoded_string);
+
+	out_file << compressed_string;
+}
+
+//https://stackoverflow.com/a/23344876 // converting binary string to ascii
+
+string TextCompression::get_compressed_string(string& encoded_string) {
+	pad_string_with_zeros(encoded_string);
+
+	/***************************************************************************************
+	*    Usage: Used
+	*    Title: Convert a string of binary into an ASCII string (C++)
+	*    Author: Wilson, D. [StackOverflow]
+	*	 Date posted: 28 April 2014
+	*	 Type: Source code
+	*    Availability: https://stackoverflow.com/a/23344876
+	*    Accessed on: 15 April 2021
+	*
+	***************************************************************************************/
+
+	string compressed_string = "";
+	istringstream encoded_stream(encoded_string);
+	string output;
+	while (encoded_stream.good())
+	{
+		bitset<8> bit_set;
+		encoded_stream >> bit_set;
+		char bits_as_char = char(bit_set.to_ulong());														// Casting the bitset to a character
+		compressed_string.push_back(bits_as_char);
+	}
+
+	return compressed_string;
+}
+
+void TextCompression::pad_string_with_zeros(string& to_pad) {
+	int num_pads = to_pad.size() % 8;
+
+	for (int i = 0; i < num_pads; i++) {
+		to_pad.push_back('0');
+	}
+}

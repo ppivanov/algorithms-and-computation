@@ -31,5 +31,15 @@ int main() {
 	encoded_in.close();
 	decoded_out.close();
 
+
+
+	initial_in.open("initial.txt");
+	ofstream compressed_out("compressed.txt");
+
+	TextCompression::compress_input_file(initial_in, compressed_out);
+
+	initial_in.close();
+	compressed_out.close();
+
 	return 0;
 }

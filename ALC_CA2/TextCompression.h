@@ -23,6 +23,9 @@ private:
 	static priority_queue<HuffmanTree*, vector<HuffmanTree*>, CompareHuffmanTree> get_priority_queue_from_map(map<char, int> char_frequency);
 	static void get_string_from_file(ifstream& in_file, string& out);
 	static void populate_char_frequency(const string& input, map<char, int>& char_frequency);
+
+	static string get_compressed_string(string& encoded_string);
+	static void pad_string_with_zeros(string& to_pad);
 public:
 	static void compress_input_file(ifstream& in_file, ofstream& out_file);
 
