@@ -12,7 +12,7 @@ public:
 	HuffmanNode(char data_in);
 
 private:
-	char data = 0;																			// in-class initialization of the data members
+	int data = 0;																			// in-class initialization of the data members
 	HuffmanTree* left = nullptr;
 	HuffmanTree* right = nullptr;
 

@@ -8,4 +8,4 @@ looked at two third-party solutions, N2WS and Veeam. With the two third party
 offerings, I investigated what they had to offer in terms of business continuity 
 and disaster recovery, if it was easier using them than the services offered by the
  cloud services providers, the ease of setting up these systems (and the cost incurred
- to use them).
+ to use them).eee

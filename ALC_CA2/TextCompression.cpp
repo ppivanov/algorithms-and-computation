@@ -1,4 +1,4 @@
-#include "TextCompression.h"
+﻿#include "TextCompression.h"
 #include <sstream>
 #include <bitset>
 
@@ -8,31 +8,6 @@ TextCompression::TextCompression() = default;
 
 
 // Private functions
-
-string TextCompression::decode_input_text(const string& input, const HuffmanTree* huffman_tree) {
-	string decoded_string = "";
-	string traversed = "";
-	HuffmanTree traversal_copy = *huffman_tree;
-	for (int i = 0; i <= input.size(); ++i) {
-		if (traversal_copy.root->data != 0) {																			// There is a char at this position. Add it to the string and reset the path.
-			decoded_string.push_back(traversal_copy.root->data);
-			traversal_copy = *huffman_tree;
-			--i;																										// Required in order to decode the last character
-		}
-		else if (i != input.size()) {
-			if (input[i] == '0') {
-				traversed += '0';
-				traversal_copy = *(traversal_copy.root->left);
-			}
-			else {
-				traversed += '1';
-				traversal_copy = *(traversal_copy.root->right);
-			}
-		}
-	}
-
-	return decoded_string;
-}
 
 string TextCompression::encode_input_text(const string& input, HuffmanTree*& huffman_tree_out) {
 	if (input.length() < 2)																								// shortcut execution and return the input string. No point encoding it.
@@ -55,7 +30,7 @@ string TextCompression::encode_from_char_mapping(const string& input, const map<
 	for (char input_char : input) {
 		encoded_string.append(char_encoding.at(input_char));
 	}
-
+	encoded_string.append(char_encoding.at(PSEUDO_EOF));																// Append the EOF character at the very end
 	return encoded_string;
 }
 
@@ -66,7 +41,7 @@ map<char, string> TextCompression::get_char_mapping_from_tree(HuffmanTree* huffm
 		string path_to_char = huffman_tree->get_path_to_char(char_pair.first);
 
 		char_path.insert(pair<char, string>(char_pair.first, path_to_char));
-		//cout << char_pair.first << "\t" << path_to_char << "\n";
+		cout << char_pair.first << "\t" << int(char_pair.first) << "\t" << path_to_char << "\n";
 	}
 
 	return char_path;
@@ -110,6 +85,43 @@ priority_queue<HuffmanTree*, vector<HuffmanTree*>, CompareHuffmanTree>
 		return tree_queue;
 }
 
+void TextCompression::populate_char_frequency(const string& input, map<char, int>& char_frequency) {
+	char_frequency.insert(pair<char, int>(PSEUDO_EOF, 1));																// Pseudo EOF character
+	for (char current_char : input) {
+		if (char_frequency.find(current_char) == char_frequency.end())
+			char_frequency.insert(pair<char, int>(current_char, 1));
+		else
+			char_frequency[current_char]++;
+	}
+}
+
+string TextCompression::decode_input_text(const string& input, const HuffmanTree* huffman_tree) {
+	string decoded_string = "";
+	string traversed = "";
+	HuffmanTree traversal_copy = *huffman_tree;
+	for (int i = 0; i <= input.size(); ++i) {
+		if (traversal_copy.root->data == PSEUDO_EOF)
+			break;
+		if (traversal_copy.root->data != 0) {																			// There is a char at this position. Add it to the string and reset the path.
+			decoded_string.push_back(traversal_copy.root->data);
+			traversal_copy = *huffman_tree;
+			--i;																										// Required in order to decode the last character
+		}
+		else if (i != input.size()) {
+			if (input[i] == '0') {
+				traversed += '0';
+				traversal_copy = *(traversal_copy.root->left);
+			}
+			else {
+				traversed += '1';
+				traversal_copy = *(traversal_copy.root->right);
+			}
+		}
+	}
+
+	return decoded_string;
+}
+
 void TextCompression::get_string_from_file(ifstream& in_file, string& out)
 {
 	/***************************************************************************************
@@ -131,33 +143,62 @@ void TextCompression::get_string_from_file(ifstream& in_file, string& out)
 		std::istreambuf_iterator<char>());
 }
 
-void TextCompression::populate_char_frequency(const string& input, map<char, int>& char_frequency) {
-	for (char current_char : input) {
-		if (char_frequency.find(current_char) == char_frequency.end())
-			char_frequency.insert(pair<char, int>(current_char, 1));
-		else
-			char_frequency[current_char]++;
+void TextCompression::get_compressed_string(string& encoded_string, string& compressed_string_out) {
+	pad_string_with_zeros(encoded_string);
+
+	/***************************************************************************************
+	*    Usage: Used
+	*    Title: Convert a string of binary into an ASCII string (C++)
+	*    Author: Wilson, D. [StackOverflow]
+	*	 Date posted: 28 April 2014
+	*	 Type: Source code
+	*    Availability: https://stackoverflow.com/a/23344876
+	*    Accessed on: 15 April 2021
+	*
+	***************************************************************************************/
+
+	compressed_string_out = "";
+	istringstream encoded_stream(encoded_string);
+	string output;
+	while (encoded_stream.good())
+	{
+		bitset<8> bit_set;
+		encoded_stream >> bit_set;
+		char bits_as_char = char(bit_set.to_ulong());																	// Casting the bitset to a character
+		compressed_string_out.push_back(bits_as_char);
+	}
+}
+
+void TextCompression::pad_string_with_zeros(string& to_pad) {
+	int number_bits = to_pad.size();
+	int number_bits_required = number_bits + 8 - (number_bits % 8);
+	int num_pads = number_bits_required - number_bits;
+
+	for (int i = 0; i < num_pads; i++) {
+		to_pad.push_back('0');
+	}
+}
+
+void TextCompression::get_binary_string(const string& encoded_string, string& binary_string_out) {
+	binary_string_out = "";
+	for (char encoded_char : encoded_string) {
+		/***************************************************************************************
+		*    Usage: Used
+		*    Title: Converting chars to binary in C++ [duplicate]
+		*    Author: <username contains non-unicode characters> [StackOverflow]
+		*	 Date posted: 12 September 2015
+		*	 Type: Source code
+		*    Availability: https://stackoverflow.com/a/32538948
+		*    Accessed on: 18 April 2021
+		*
+		***************************************************************************************/
+
+		binary_string_out.append(bitset<8>(encoded_char).to_string());
 	}
 }
 
 
 // Public functions
-
-string TextCompression::decode_input_text_to_file(const string& input, ofstream& out_file, const HuffmanTree* huffman_tree) {
-	string decoded_string = decode_input_text(input, huffman_tree);
-	out_file << decoded_string;
-
-	return decoded_string;
-}
-
-void TextCompression::decode_input_file_to_file(ifstream& in_file, ofstream& out_file, const HuffmanTree* huffman_tree) {
-	string input_text;
-	get_string_from_file(in_file, input_text);
-
-	string decoded_string = decode_input_text_to_file(input_text, out_file, huffman_tree);
-
-	cout << decoded_string;
-}
 
 string TextCompression::encode_input_text_to_file(const string& input, ofstream& out_file, HuffmanTree*& huffman_tree_out) {
 	string encoded_string = encode_input_text(input, huffman_tree_out);
@@ -177,52 +218,46 @@ HuffmanTree* TextCompression::encode_input_file_to_file(ifstream& in_file, ofstr
 }
 
 
-void TextCompression::compress_input_file(ifstream& in_file, ofstream& out_file) {
-	HuffmanTree* huffman_tree;
+string TextCompression::decode_input_text_to_file(const string& input, ofstream& out_file, const HuffmanTree* huffman_tree) {
+	string decoded_string = decode_input_text(input, huffman_tree);
+	out_file << decoded_string;
+
+	return decoded_string;
+}
+
+void TextCompression::decode_input_file_to_file(ifstream& in_file, ofstream& out_file, const HuffmanTree* huffman_tree) {
 	string input_text;
 	get_string_from_file(in_file, input_text);
 
-	string encoded_string = encode_input_text(input_text, huffman_tree);								// false-positive warning for memory leak
+	string decoded_string = decode_input_text_to_file(input_text, out_file, huffman_tree);
 
-	string compressed_string = get_compressed_string(encoded_string);
-
-	out_file << compressed_string;
+	//cout << decoded_string << endl;
 }
 
-//https://stackoverflow.com/a/23344876 // converting binary string to ascii
 
-string TextCompression::get_compressed_string(string& encoded_string) {
-	pad_string_with_zeros(encoded_string);
+HuffmanTree* TextCompression::compress_input_file(ifstream& in_file, ofstream& out_file) {
+	HuffmanTree* huffman_tree_out;
+	string input_text;
+	get_string_from_file(in_file, input_text);
 
-	/***************************************************************************************
-	*    Usage: Used
-	*    Title: Convert a string of binary into an ASCII string (C++)
-	*    Author: Wilson, D. [StackOverflow]
-	*	 Date posted: 28 April 2014
-	*	 Type: Source code
-	*    Availability: https://stackoverflow.com/a/23344876
-	*    Accessed on: 15 April 2021
-	*
-	***************************************************************************************/
+	string encoded_string = encode_input_text(input_text, huffman_tree_out);								// false-positive warning for memory leak
 
-	string compressed_string = "";
-	istringstream encoded_stream(encoded_string);
-	string output;
-	while (encoded_stream.good())
-	{
-		bitset<8> bit_set;
-		encoded_stream >> bit_set;
-		char bits_as_char = char(bit_set.to_ulong());														// Casting the bitset to a character
-		compressed_string.push_back(bits_as_char);
-	}
+	string compressed_string_out;
+	get_compressed_string(encoded_string, compressed_string_out);
 
-	return compressed_string;
+	out_file << compressed_string_out;
+
+	return huffman_tree_out;
 }
 
-void TextCompression::pad_string_with_zeros(string& to_pad) {
-	int num_pads = to_pad.size() % 8;
+void TextCompression::decompress_input_file(ifstream& in_file, ofstream& out_file, const HuffmanTree* huffman_tree) {
+	string input_text;
+	get_string_from_file(in_file, input_text);
 
-	for (int i = 0; i < num_pads; i++) {
-		to_pad.push_back('0');
-	}
+	string binary_string_out;
+	get_binary_string(input_text, binary_string_out);
+
+	string decoded_string = decode_input_text_to_file(binary_string_out, out_file, huffman_tree);
+
+	cout << decoded_string << endl;
 }

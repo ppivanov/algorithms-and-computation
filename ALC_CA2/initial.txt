@@ -1,1 +1,11 @@
-No sure why people are voting this up, here is a quick question, say I have a 1MB file, how many times will the "end" passed to the std::string constructor or assign method be invoked?
+This is mine here: For my final year project, I set out to look at business 
+continuity and disaster recovery in the cloud. To do this, I looked at all
+ options available across the three current leaders in public cloud technologies:
+ Amazon Web Services, Microsoft Azure and Google Cloud Platform. In each platform,
+ I investigated the services available to perform backups etc. and judged them under
+ various metrics such as difficulty setting up and cost. As well as that, I also 
+looked at two third-party solutions, N2WS and Veeam. With the two third party 
+offerings, I investigated what they had to offer in terms of business continuity 
+and disaster recovery, if it was easier using them than the services offered by the
+ cloud services providers, the ease of setting up these systems (and the cost incurred
+ to use them).

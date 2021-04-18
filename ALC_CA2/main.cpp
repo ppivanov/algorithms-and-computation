@@ -13,6 +13,8 @@ int main() {
 	string encoded_text = TextCompression::encode_input_text(plain_text, encoded, huffman_tree);
 	string decoded_text = TextCompression::decode_input_text(encoded_text, decoded, huffman_tree);*/
 
+
+
 	ifstream initial_in("initial.txt");
 	ofstream encoded_out("encoded.txt");
 
@@ -40,6 +42,16 @@ int main() {
 
 	initial_in.close();
 	compressed_out.close();
+
+
+
+	ifstream compressed_in("compressed.txt");
+	ofstream decompressed_out("decompressed.txt");
+
+	TextCompression::decompress_input_file(compressed_in, decompressed_out, huffman_tree);
+
+	compressed_in.close();
+	decompressed_out.close();
 
 	return 0;
 }
