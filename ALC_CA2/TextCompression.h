@@ -17,11 +17,11 @@ private:
 	static const int PSEUDO_EOF = 256;
 
 	static string encode_input_text(const string& input, HuffmanTree*& huffman_tree_out);
-	static string encode_from_char_mapping(const string& input, const map<char, string>& char_encoding);
-	static map<char, string> get_char_mapping_from_tree(HuffmanTree* huffman_tree, map<char, int> char_frequency);
-	static HuffmanTree* get_huffman_tree_from_map(map<char, int> char_frequency);
-	static priority_queue<HuffmanTree*, vector<HuffmanTree*>, CompareHuffmanTree> get_priority_queue_from_map(map<char, int> char_frequency);
-	static void populate_char_frequency(const string& input, map<char, int>& char_frequency);
+	static string encode_from_char_mapping(const string& input, const map<int, string>& char_encoding);
+	static map<int, string> get_char_mapping_from_tree(HuffmanTree* huffman_tree, map<int, int> char_frequency);
+	static HuffmanTree* get_huffman_tree_from_map(map<int, int> char_frequency);
+	static priority_queue<HuffmanTree*, vector<HuffmanTree*>, CompareHuffmanTree> get_priority_queue_from_map(map<int, int> char_frequency);
+	static void populate_char_frequency(const string& input, map<int, int>& char_frequency);
 
 	static string decode_input_text(const string& input, const HuffmanTree* huffman_tree);
 	

@@ -13,41 +13,41 @@ string TextCompression::encode_input_text(const string& input, HuffmanTree*& huf
 	if (input.length() < 2)																								// shortcut execution and return the input string. No point encoding it.
 		return input;
 
-	map<char, int> char_frequency;
+	map<int, int> char_frequency;
 	populate_char_frequency(input, char_frequency);
 
 	huffman_tree_out = get_huffman_tree_from_map(char_frequency);
-	//cout << *huffman_tree << "\n\n";
+	//cout << *huffman_tree_out << "\n\n";
 
-	map<char, string> char_encoding = get_char_mapping_from_tree(huffman_tree_out, char_frequency);						// This line warns about a memory leak in the function, still, nothing is being created nor detatched
+	map<int, string> char_encoding = get_char_mapping_from_tree(huffman_tree_out, char_frequency);						// This line warns about a memory leak in the function, still, nothing is being created nor detatched
 	string encoded_string = encode_from_char_mapping(input, char_encoding);
 
 	return encoded_string;
 }
 
-string TextCompression::encode_from_char_mapping(const string& input, const map<char, string>&char_encoding) {
+string TextCompression::encode_from_char_mapping(const string& input, const map<int, string>& char_encoding) {
 	string encoded_string = "";
-	for (char input_char : input) {
+	for (int input_char : input) {
 		encoded_string.append(char_encoding.at(input_char));
 	}
 	encoded_string.append(char_encoding.at(PSEUDO_EOF));																// Append the EOF character at the very end
 	return encoded_string;
 }
 
-map<char, string> TextCompression::get_char_mapping_from_tree(HuffmanTree* huffman_tree, map<char, int> char_frequency) {
-	map<char, string> char_path;
+map<int, string> TextCompression::get_char_mapping_from_tree(HuffmanTree* huffman_tree, map<int, int> char_frequency) {
+	map<int, string> char_path;
 
-	for (pair<char, int> char_pair : char_frequency) {
+	for (pair<int, int> char_pair : char_frequency) {
 		string path_to_char = huffman_tree->get_path_to_char(char_pair.first);
 
-		char_path.insert(pair<char, string>(char_pair.first, path_to_char));
-		cout << char_pair.first << "\t" << int(char_pair.first) << "\t" << path_to_char << "\n";
+		char_path.insert(pair<int, string>(char_pair.first, path_to_char));
+		cout << (char)char_pair.first << "\t" << char_pair.first << "\t" << path_to_char << "\n";
 	}
 
 	return char_path;
 }
 
-HuffmanTree* TextCompression::get_huffman_tree_from_map(map<char, int> char_frequency)
+HuffmanTree* TextCompression::get_huffman_tree_from_map(map<int, int> char_frequency)
 {
 	auto tree_queue = get_priority_queue_from_map(char_frequency);										// using auto to detect the type as it's too long and hard to read
 
@@ -73,23 +73,23 @@ HuffmanTree* TextCompression::get_huffman_tree_from_map(map<char, int> char_freq
 }
 
 priority_queue<HuffmanTree*, vector<HuffmanTree*>, CompareHuffmanTree>
-	TextCompression::get_priority_queue_from_map(map<char, int> char_frequency) {
+	TextCompression::get_priority_queue_from_map(map<int, int> char_frequency) {
 		priority_queue<HuffmanTree*, vector<HuffmanTree*>, CompareHuffmanTree> tree_queue;
 
-		map<char, int>::iterator it = char_frequency.begin();											// Transferring the map elements to a priority queue
+		map<int, int>::iterator it = char_frequency.begin();											// Transferring the map elements to a priority queue
 		while (it != char_frequency.end()) {
 			tree_queue.push(new HuffmanTree(it->first, it->second));
-			it++;
+			++it;
 		}
 
 		return tree_queue;
 }
 
-void TextCompression::populate_char_frequency(const string& input, map<char, int>& char_frequency) {
-	char_frequency.insert(pair<char, int>(PSEUDO_EOF, 1));																// Pseudo EOF character
+void TextCompression::populate_char_frequency(const string& input, map<int, int>& char_frequency) {
+	char_frequency.insert(pair<int, int>(PSEUDO_EOF, 1));																// Pseudo EOF character
 	for (char current_char : input) {
 		if (char_frequency.find(current_char) == char_frequency.end())
-			char_frequency.insert(pair<char, int>(current_char, 1));
+			char_frequency.insert(pair<int, int>(current_char, 1));
 		else
 			char_frequency[current_char]++;
 	}

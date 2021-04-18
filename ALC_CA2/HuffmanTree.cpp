@@ -4,7 +4,7 @@ using namespace std;
 
 HuffmanTree::HuffmanTree() = default;
 
-HuffmanTree::HuffmanTree(char data_in, int weight_in) :
+HuffmanTree::HuffmanTree(int data_in, int weight_in) :
 	weight{ weight_in },
 	root{ new HuffmanNode(data_in) } {  }
 
@@ -16,12 +16,12 @@ HuffmanTree::HuffmanTree(HuffmanTree* left_tree, HuffmanTree* right_node, int to
 	root->right = right_node;
 }
 
-string HuffmanTree::get_path_to_char(char to_find)
+string HuffmanTree::get_path_to_char(int to_find)
 {
 	return get_path_to_char(to_find, root, "");
 }
 
-string HuffmanTree::get_path_to_char(char to_find, HuffmanNode* node, string path)
+string HuffmanTree::get_path_to_char(int to_find, HuffmanNode* node, string path)
 {
 	if (node == nullptr || node->data == to_find)
 		return path;

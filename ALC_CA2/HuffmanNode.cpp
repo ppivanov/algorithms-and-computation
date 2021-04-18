@@ -5,7 +5,7 @@ using namespace std;
 
 HuffmanNode::HuffmanNode() = default;
 
-HuffmanNode::HuffmanNode(char data_in) : data{ data_in } {  }
+HuffmanNode::HuffmanNode(int data_in) : data{ data_in } {  }
 
 ostream& operator<<(ostream & out, const HuffmanNode& node) {
 	if(&node != nullptr && node.data != 0)

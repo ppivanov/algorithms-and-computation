@@ -9,7 +9,7 @@ class HuffmanNode
 {
 public:
 	HuffmanNode();
-	HuffmanNode(char data_in);
+	HuffmanNode(int data_in);
 
 private:
 	int data = 0;																			// in-class initialization of the data members
