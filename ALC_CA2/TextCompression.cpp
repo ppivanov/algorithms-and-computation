@@ -2,6 +2,7 @@
 #include <sstream>
 #include <bitset>
 #include <stack>
+#include <streambuf>
 
 using namespace std;
 
@@ -18,7 +19,6 @@ string TextCompression::encode_input_text(const string& input, HuffmanTree*& huf
 	populate_char_frequency(input, char_frequency);
 
 	huffman_tree_out = get_huffman_tree_from_map(char_frequency);
-	//cout << *huffman_tree_out << "\n\n";
 
 	map<int, string> char_encoding = get_char_mapping_from_tree(huffman_tree_out, char_frequency);						// This line warns about a memory leak in the function, still, nothing is being created nor detatched
 	string encoded_string = encode_from_char_mapping(input, char_encoding);
@@ -42,7 +42,6 @@ map<int, string> TextCompression::get_char_mapping_from_tree(HuffmanTree* huffma
 		string path_to_char = huffman_tree->get_path_to_char(char_pair.first);
 
 		char_path.insert(pair<int, string>(char_pair.first, path_to_char));
-		//cout << (char)char_pair.first << "\t" << char_pair.first << "\t" << path_to_char << "\n";
 	}
 
 	return char_path;
@@ -128,20 +127,17 @@ void TextCompression::get_string_from_file(ifstream& in_file, string& out)
 	/***************************************************************************************
 	*    Usage: Used
 	*    Title: Read whole ASCII file into C++ std::string [duplicate]
-	*    Author: McHenry, T [StackOverflow] (editted by resueman [StackOverflow])
+	*    Author: Jerry Coffin [StackOverflow]
 	*	 Date posted: 8 April 2010
 	*	 Type: Source code
-	*    Availability: https://stackoverflow.com/a/2602060
-	*    Accessed on: 15 April 2021
+	*    Availability: https://stackoverflow.com/a/2602258
+	*    Accessed on: 19 April 2021
 	*
 	***************************************************************************************/
 
-	in_file.seekg(0, std::ios::end);
-	out.reserve(in_file.tellg());
-	in_file.seekg(0, std::ios::beg);
-
-	out.assign((std::istreambuf_iterator<char>(in_file)),
-		std::istreambuf_iterator<char>());
+	ostringstream buffer;
+	buffer << in_file.rdbuf();
+	out.assign(buffer.str());
 }
 
 void TextCompression::get_compressed_string(string& encoded_string, string& compressed_string_out) {
@@ -198,8 +194,20 @@ void TextCompression::get_binary_string(const string& encoded_string, string& bi
 	}
 }
 
-// ref: https://engineering.purdue.edu/ece264/17au/hw/HW13?alt=huffman
 string TextCompression::encode_huffman_tree(HuffmanTree* huffman_tree) {
+
+	/***************************************************************************************
+	*    Usage: Used
+	*    Title: ECE264: Huffman Coding
+	*    Author: Purdue University
+	*	 Date posted: N.D.
+	*	 Type: Algorithm
+	*    Availability: https://engineering.purdue.edu/ece264/17au/hw/HW13?alt=huffman
+	*    Accessed on: 19 April 2021
+	*
+	***************************************************************************************/
+
+
 	string encoded_string = "";
 	encode_huffman_tree_helper(huffman_tree, encoded_string);
 	encoded_string.append("0");
@@ -219,6 +227,66 @@ string TextCompression::encode_huffman_tree_helper(HuffmanTree* huffman_tree, st
 	return accumulated_string;
 }
 
+HuffmanTree* TextCompression::decode_huffman_tree(const string& encoded_tree, const unsigned int bits_used_for_tree) {
+
+	/***************************************************************************************
+	*    Usage: Used
+	*    Title: ECE264: Huffman Coding
+	*    Author: Purdue University
+	*	 Date posted: N.D.
+	*	 Type: Algorithm
+	*    Availability: https://engineering.purdue.edu/ece264/17au/hw/HW13?alt=huffman
+	*    Accessed on: 19 April 2021
+	*
+	***************************************************************************************/
+
+	stack<HuffmanTree*> stack;
+	HuffmanTree* huffman_tree = nullptr;
+	bool eof_added = false;
+	for (unsigned int i = 0; i <= bits_used_for_tree;) {
+		unsigned int position = i;
+		if (bits_used_for_tree - position > 8) {
+			if (encoded_tree[position] == '1') {																		// if true, next char is a leaf node
+				bitset<8> char_bit_set;
+				stringstream ss_tree_size(encoded_tree.substr(position + 1, 8));
+				ss_tree_size >> char_bit_set;
+				int to_add = char_bit_set.to_ulong();
+				if (eof_added == false && char_bit_set.to_string() == "00000000") {
+					eof_added = true;
+					to_add = PSEUDO_EOF;
+				}
+				stack.push(new HuffmanTree(to_add, 0));
+				i += 9;
+				continue;
+			}
+			else if (stack.size() > 1) {
+				HuffmanTree* first_pop = stack.top();
+				stack.pop();
+
+				HuffmanTree* second_pop = stack.top();
+				stack.pop();
+
+				stack.push(new HuffmanTree(second_pop, first_pop, 0));
+			}
+			++i;
+		}
+		else break;
+	}
+	if (huffman_tree == nullptr) {																						// restack the trees until a single one is left
+		while (stack.size() > 1) {
+			HuffmanTree* first_pop = stack.top();
+			stack.pop();
+
+			HuffmanTree* second_pop = stack.top();
+			stack.pop();
+
+			stack.push(new HuffmanTree(second_pop, first_pop, 0));
+		}
+
+		huffman_tree = stack.top();
+	}
+	return huffman_tree;
+}
 
 // Public functions
 
@@ -251,9 +319,7 @@ void TextCompression::decode_input_file_to_file(ifstream& in_file, ofstream& out
 	string input_text;
 	get_string_from_file(in_file, input_text);
 
-	string decoded_string = decode_input_text_to_file(input_text, out_file, huffman_tree);
-
-	//cout << decoded_string << endl;
+	decode_input_text_to_file(input_text, out_file, huffman_tree);
 }
 
 
@@ -279,9 +345,7 @@ void TextCompression::decompress_input_file(ifstream& in_file, ofstream& out_fil
 	string binary_string_out;
 	get_binary_string(input_text, binary_string_out);
 
-	string decoded_string = decode_input_text_to_file(binary_string_out, out_file, huffman_tree);
-
-	//cout << decoded_string << endl;
+	decode_input_text_to_file(binary_string_out, out_file, huffman_tree);
 }
 
 
@@ -319,66 +383,7 @@ void TextCompression::decompress_input_file_independent(ifstream& in_file, ofstr
 	string encoded_string = binary_string_out.substr(bits_used_for_tree + 32, binary_string_out.size() - (bits_used_for_tree + 32));
 	string encoded_tree = binary_string_out.substr(32, bits_used_for_tree);
 
-	stack<HuffmanTree*> stack;
-	HuffmanTree* huffman_tree = nullptr;
-	bool eof_added = false;
-	for (unsigned int i = 0; i <= bits_used_for_tree;) {
-		unsigned int position = i;
-		if (bits_used_for_tree - position > 8) {
-			if (encoded_tree[position] == '1') {												// if true, next char is a leaf node
-				bitset<8> char_bit_set;
-				stringstream ss_tree_size(encoded_tree.substr(position + 1, 8));
-				ss_tree_size >> char_bit_set;
-				int to_add = char_bit_set.to_ulong();
-				if (eof_added == false && char_bit_set.to_string() == "00000000") {
-					eof_added = true;
-					to_add = PSEUDO_EOF;
-				}
-				stack.push(new HuffmanTree(to_add, 0));
-				i += 9;
-				continue;
-			}
-			/*else if (stack.size() == 1) {
-				huffman_tree = stack.top();
-				break;
-			}*/
-			else if (stack.size() > 1) {
-				HuffmanTree* first_pop = stack.top();
-				stack.pop();
-
-				HuffmanTree* second_pop = stack.top();
-				stack.pop();
-
-				stack.push(new HuffmanTree(second_pop, first_pop, 0));
-			}
-			++i;
-		}
-		else break;								
-	}
-	if (huffman_tree == nullptr) {																	// restack the trees until a single one is left
-		while (stack.size() > 1) {
-			HuffmanTree* first_pop = stack.top();
-			stack.pop();
-
-			HuffmanTree* second_pop = stack.top();
-			stack.pop();
-
-			stack.push(new HuffmanTree(second_pop, first_pop, 0));
-		}
-
-		huffman_tree = stack.top();
-		cout << *huffman_tree;
-	}
-
-	// To construct a Huffman coding tree from the header information, we make use of a stack.
-	// When a 1 is read, we read the next byte and push the corresponding ASCII character onto the stack.
-	// When a 0 (bit or character) is read, if the stack contains only one element, we have constructed 
-	// the entire Huffman coding tree.Otherwise, there must be more than one element in the stack.We create
-	// a new node, and pop the top two elements off the stack.We make the first element off the stack 
-	// the right child of the new node, and the second element off the stack the left child of the new
-	// node. After that, we push the newly created node onto the stack.
+	HuffmanTree* huffman_tree = decode_huffman_tree(encoded_tree, encoded_tree.size());
 
 	string decoded_string = decode_input_text_to_file(encoded_string, out_file, huffman_tree);
-
-	//cout << decoded_string << endl;
 }

@@ -35,6 +35,8 @@ private:
 	static string encode_huffman_tree(HuffmanTree* huffman_tree);
 	static string encode_huffman_tree_helper(HuffmanTree* huffman_tree, string& accumulated_string);
 
+	static HuffmanTree* decode_huffman_tree(const string& binary_string, const unsigned int bits_used_for_tree);
+
 public:
 	static string encode_input_text_to_file(const string& input, ofstream& out_file, HuffmanTree*& huffman_tree_out);						// Section A - task 4
 	static HuffmanTree* encode_input_file_to_file(ifstream& in_file, ofstream& out_file);
