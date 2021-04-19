@@ -51,7 +51,7 @@ HuffmanTree* TextCompression::get_huffman_tree_from_map(map<int, int> char_frequ
 {
 	auto tree_queue = get_priority_queue_from_map(char_frequency);														// using auto to detect the type as it's too long and hard to read
 
-	while (tree_queue.size() > 2) {																						// While there are more than 2 elements in the queue pop the fist two and add them to a new tree
+	while (tree_queue.size() > 1) {																						// While there are 2 or more elements in the queue pop the fist two and add them to a new tree
 		HuffmanTree* first_pop = tree_queue.top();
 		tree_queue.pop();
 
@@ -61,15 +61,7 @@ HuffmanTree* TextCompression::get_huffman_tree_from_map(map<int, int> char_frequ
 		tree_queue.push(new HuffmanTree(first_pop, second_pop, first_pop->weight + second_pop->weight));
 	}
 
-	HuffmanTree* first_pop = tree_queue.top();
-	tree_queue.pop();
-
-	HuffmanTree* second_pop = tree_queue.top();
-	tree_queue.pop();
-
-	HuffmanTree* final_tree = new HuffmanTree(first_pop, second_pop, first_pop->weight + second_pop->weight);
-
-	return final_tree;
+	return tree_queue.top();
 }
 
 priority_queue<HuffmanTree*, vector<HuffmanTree*>, CompareHuffmanTree>
@@ -136,7 +128,7 @@ void TextCompression::get_string_from_file(ifstream& in_file, string& out)
 	***************************************************************************************/
 
 	ostringstream buffer;
-	buffer << in_file.rdbuf();
+	buffer << in_file.rdbuf();																							// Read in the whole file at once
 	out.assign(buffer.str());
 }
 
@@ -160,7 +152,7 @@ void TextCompression::get_compressed_string(string& encoded_string, string& comp
 	while (encoded_stream.good())
 	{
 		bitset<8> bit_set;
-		encoded_stream >> bit_set;
+		encoded_stream >> bit_set;																						// Transfers the first 8 bits into the bitset and removes them from the stream
 		char bits_as_char = char(bit_set.to_ulong());																	// Casting the bitset to a character
 		compressed_string_out.push_back(bits_as_char);
 	}
@@ -207,7 +199,6 @@ string TextCompression::encode_huffman_tree(HuffmanTree* huffman_tree) {
 	*
 	***************************************************************************************/
 
-
 	string encoded_string = "";
 	encode_huffman_tree_helper(huffman_tree, encoded_string);
 	encoded_string.append("0");
@@ -216,12 +207,12 @@ string TextCompression::encode_huffman_tree(HuffmanTree* huffman_tree) {
 
 string TextCompression::encode_huffman_tree_helper(HuffmanTree* huffman_tree, string& accumulated_string) {
 	if (huffman_tree != nullptr) {
-		encode_huffman_tree_helper(huffman_tree->root->left, accumulated_string);
+		encode_huffman_tree_helper(huffman_tree->root->left, accumulated_string);										// Post-order traversal to encode the tree.
 		encode_huffman_tree_helper(huffman_tree->root->right, accumulated_string);
 		if (huffman_tree->root->data != 0)
-			accumulated_string.append("1" + bitset<8>(huffman_tree->root->data).to_string());
+			accumulated_string.append("1" + bitset<8>(huffman_tree->root->data).to_string());							// Add 1 and the character,
 		else
-			accumulated_string.append("0");
+			accumulated_string.append("0");																				// otherwise add a 0
 	}
 
 	return accumulated_string;
@@ -248,18 +239,18 @@ HuffmanTree* TextCompression::decode_huffman_tree(const string& encoded_tree, co
 		if (bits_used_for_tree - position > 8) {
 			if (encoded_tree[position] == '1') {																		// if true, next char is a leaf node
 				bitset<8> char_bit_set;
-				stringstream ss_tree_size(encoded_tree.substr(position + 1, 8));
-				ss_tree_size >> char_bit_set;
+				stringstream ss_tree_size(encoded_tree.substr(position + 1, 8));										// read in the next 8 bits
+				ss_tree_size >> char_bit_set;																			// and convert them
 				int to_add = char_bit_set.to_ulong();
-				if (eof_added == false && char_bit_set.to_string() == "00000000") {
+				if (eof_added == false && char_bit_set.to_string() == "00000000") {										// if the bits are all 0s - that is the pseudoEOF node
 					eof_added = true;
 					to_add = PSEUDO_EOF;
 				}
-				stack.push(new HuffmanTree(to_add, 0));
+				stack.push(new HuffmanTree(to_add, 0));																	// Push it as a new tree onto the stack
 				i += 9;
-				continue;
+				continue;																								// used to skip incrementing i
 			}
-			else if (stack.size() > 1) {
+			else if (stack.size() > 1) {																				// if not a leaf node, restack
 				HuffmanTree* first_pop = stack.top();
 				stack.pop();
 
@@ -326,64 +317,64 @@ void TextCompression::decode_input_file_to_file(ifstream& in_file, ofstream& out
 HuffmanTree* TextCompression::compress_input_file(ifstream& in_file, ofstream& out_file) {
 	HuffmanTree* huffman_tree_out;
 	string input_text;
-	get_string_from_file(in_file, input_text);
+	get_string_from_file(in_file, input_text);																			// read in the file to compress
 
 	string encoded_string = encode_input_text(input_text, huffman_tree_out);											// false-positive warning for memory leak
 
 	string compressed_string_out;
-	get_compressed_string(encoded_string, compressed_string_out);
+	get_compressed_string(encoded_string, compressed_string_out);														// compress the string
 
-	out_file << compressed_string_out;
+	out_file << compressed_string_out;																					// write the compressed string
 
 	return huffman_tree_out;
 }
 
 void TextCompression::decompress_input_file(ifstream& in_file, ofstream& out_file, const HuffmanTree* huffman_tree) {
 	string input_text;
-	get_string_from_file(in_file, input_text);
+	get_string_from_file(in_file, input_text);																			// read the compressed file
 
 	string binary_string_out;
-	get_binary_string(input_text, binary_string_out);
+	get_binary_string(input_text, binary_string_out);																	// get the compressed string as 1s and 0s
 
-	decode_input_text_to_file(binary_string_out, out_file, huffman_tree);
+	decode_input_text_to_file(binary_string_out, out_file, huffman_tree);												// decode and write to file
 }
 
 
 void TextCompression::compress_input_file_independent(ifstream& in_file, ofstream& out_file) {
 	HuffmanTree* huffman_tree_out;
 	string input_text;
-	get_string_from_file(in_file, input_text);
+	get_string_from_file(in_file, input_text);																			// read in the file to compress
 
 	string encoded_string = encode_input_text(input_text, huffman_tree_out);											// false-positive warning for memory leak
 
-	string encoded_tree = encode_huffman_tree(huffman_tree_out);
+	string encoded_tree = encode_huffman_tree(huffman_tree_out);														// encode the huffman tree into 1s and 0s
 	pad_string_with_zeros(encoded_tree);
-	string encoded_tree_size = bitset<32>(encoded_tree.size() / 8).to_string();
+	string encoded_tree_size = bitset<32>(encoded_tree.size() / 8).to_string();											// get 32 bits for the size of the tree
 
-	encoded_string = encoded_tree_size + encoded_tree + encoded_string;
+	encoded_string = encoded_tree_size + encoded_tree + encoded_string;													// add size and tree at the front
 
 	string compressed_string_out;
-	get_compressed_string(encoded_string, compressed_string_out);
+	get_compressed_string(encoded_string, compressed_string_out);														// compress the string
 
-	out_file << compressed_string_out;
+	out_file << compressed_string_out;																					// write the compressed string
 }
 
 void TextCompression::decompress_input_file_independent(ifstream& in_file, ofstream& out_file) {
 	string input_text;
-	get_string_from_file(in_file, input_text);
+	get_string_from_file(in_file, input_text);																			// read the compressed file
 
 	string binary_string_out;
-	get_binary_string(input_text, binary_string_out);
+	get_binary_string(input_text, binary_string_out);																	// get the compressed string as 1s and 0s
 
 	bitset<32> bit_set;
 	stringstream ss_tree_size(binary_string_out.substr(0, 32));
 	ss_tree_size >> bit_set;
-	unsigned int bits_used_for_tree = bit_set.to_ulong() * 8;
+	unsigned int bits_used_for_tree = bit_set.to_ulong() * 8;															// get the size of the tree
 
-	string encoded_string = binary_string_out.substr(bits_used_for_tree + 32, binary_string_out.size() - (bits_used_for_tree + 32));
-	string encoded_tree = binary_string_out.substr(32, bits_used_for_tree);
+	string encoded_string = binary_string_out.substr(bits_used_for_tree + 32, binary_string_out.size() - (bits_used_for_tree + 32));			// compressed contents
+	string encoded_tree = binary_string_out.substr(32, bits_used_for_tree);												// the encoded tree can be extracted since the size is known
 
-	HuffmanTree* huffman_tree = decode_huffman_tree(encoded_tree, encoded_tree.size());
+	HuffmanTree* huffman_tree = decode_huffman_tree(encoded_tree, encoded_tree.size());									// decode the 1s and 0s to get a huffman tree
 
-	string decoded_string = decode_input_text_to_file(encoded_string, out_file, huffman_tree);
+	string decoded_string = decode_input_text_to_file(encoded_string, out_file, huffman_tree);							// decode and write to file
 }
