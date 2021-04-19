@@ -58,4 +58,3 @@ bool CompareHuffmanTree::operator() (const HuffmanTree* lhs, const HuffmanTree* 
 {
 	return lhs->weight > rhs->weight;
 }
-

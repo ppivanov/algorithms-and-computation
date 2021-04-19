@@ -53,5 +53,24 @@ int main() {
 	compressed_in.close();
 	decompressed_out.close();
 
+
+
+	initial_in.open("initial.txt");
+	ofstream independent_compressed_out("independent-compressed.txt");
+
+	TextCompression::compress_input_file_independent(initial_in, independent_compressed_out);
+
+	initial_in.close();
+	independent_compressed_out.close();
+
+
+	ifstream independent_compressed_in("independent-compressed.txt");
+	ofstream independent_decompressed_out("independent-decompressed.txt");
+
+	TextCompression::decompress_input_file_independent(independent_compressed_in, independent_decompressed_out);
+
+	independent_compressed_in.close();
+	independent_decompressed_out.close();
+
 	return 0;
 }
